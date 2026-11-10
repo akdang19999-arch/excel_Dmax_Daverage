@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMAX, DAVERAGE</title>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; line-height: 1.4; padding: 20px; max-width: 900px; margin: 0 auto; color: #333; }
+        
+        /* 🚀 새롭게 강조된 헤더와 설명 디자인 */
+        .header-banner {
+            background-color: #107c41; /* 엑셀 시그니처 초록색 */
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(16, 124, 65, 0.3);
+        }
+        .header-banner h1 {
+            margin: 0 0 10px 0;
+            font-size: 34px;
+            border: none;
+            padding: 0;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+        .header-banner p {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+            opacity: 0.9;
+        }
+        
+        .description { 
+            background-color: #f0fdf4; 
+            border: 2px solid #bbf7d0;
+            border-left: 8px solid #107c41; 
+            padding: 20px 25px; 
+            border-radius: 10px; 
+            margin-bottom: 30px; 
+            font-size: 16px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .description strong { color: #107c41; }
+        
+        .code-box { 
+            background-color: #ffffff; 
+            border: 1px solid #d1d5db;
+            border-left: 4px solid #107c41;
+            padding: 12px 15px; 
+            border-radius: 6px; 
+            font-family: 'Consolas', monospace; 
+            font-size: 17px; 
+            margin: 12px 0; 
+            font-weight: bold; 
+            color: #1f2937;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .emoji-icon { font-size: 28px; vertical-align: bottom; margin-right: 8px; }
+        
+        h2 { font-size: 20px; color: #107c41; margin-top: 30px; font-weight: bold; }
+        
+        /* 엑셀 UI 스타일 */
+        .excel-container { border: 1px solid #c0c0c0; background-color: #fff; margin-top: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .formula-bar-container { display: flex; align-items: center; border-bottom: 1px solid #c0c0c0; padding: 5px 10px; background-color: #f3f2f1; }
+        .fx-icon { font-style: italic; font-weight: bold; color: #666; margin-right: 10px; font-family: 'Times New Roman', Times, serif; }
+        .formula-bar { flex-grow: 1; background-color: #fff; border: 1px solid #ccc; padding: 5px 10px; font-family: 'Consolas', monospace; font-size: 15px; min-height: 22px; }
+        
+        .excel-table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: center; }
+        .excel-table th, .excel-table td { border: 1px solid #d4d4d4; padding: 8px; }
+        .excel-table th { background-color: #f3f2f1; color: #333; font-weight: normal; }
+        .excel-table .row-num { background-color: #f3f2f1; width: 30px; color: #333; }
+        
+        /* 셀 스타일 */
+        .header-cell { background-color: #e6f2ff; font-weight: bold; }
+        .editable { background-color: #fffbdd; cursor: text; font-weight: bold; color: #b12704; outline: none; }
+        .editable:focus { border: 2px solid #217346; padding: 7px; }
+        .result-cell { font-weight: bold; color: #217346; background-color: #e6ffed; cursor: pointer; }
+        .result-cell:hover { background-color: #ccffdb; }
+        .active-cell { border: 2px solid #217346; padding: 7px; }
+        
+        /* 구문 강조 (Syntax Highlighting) */
+        .func { color: #0000FF; font-weight: bold; }
+        .paren1 { color: #FF0000; font-weight: bold; }
+        .paren2 { color: #008000; font-weight: bold; }
+        .ref-db { color: #2563eb; font-weight: bold; } /* 파란색 */
+        .ref-field { color: #A52A2A; font-weight: bold; } /* 갈색 */
+        .ref-crit { color: #dc2626; font-weight: bold; } /* 빨간색 */
+        .text { color: #008000; }
+        .operator { color: #333; }
+        
+        /* 엑셀 범위 색상 강조 (수식 클릭 시) */
+        .highlight-db { background-color: rgba(37, 99, 235, 0.1) !important; outline: 2px solid #2563eb; outline-offset: -2px; z-index: 10; position: relative; }
+        .highlight-crit { background-color: rgba(220, 38, 38, 0.1) !important; outline: 2px solid #dc2626; outline-offset: -2px; z-index: 10; position: relative; }
+        
+        .hint { font-size: 14px; color: #666; margin-top: 8px; font-weight: bold; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="header-banner">
+        <h1><span class="emoji-icon">📊</span>DMAX, DAVERAGE</h1>
+        <p>복잡한 표에서 내가 원하는 조건만 쏙쏙 뽑아 계산하는 마법!</p>
+    </div>
+
+    <div class="description">
+        <p style="margin-top: 0; font-size: 17px;">
+            <strong>데이터베이스 함수(D함수)</strong>는 표(데이터베이스) 전체에서 <strong>특정 조건</strong>에 맞는 데이터만 골라내어 최댓값이나 평균을 구해줍니다. 🧙‍♂️
+        </p>
+        
+        <div class="code-box">=DMAX(<span class="ref-db">데이터범위</span>, <span class="ref-field">계산할열</span>, <span class="ref-crit">조건범위</span>)</div>
+        <div class="code-box">=DAVERAGE(<span class="ref-db">데이터범위</span>, <span class="ref-field">계산할열</span>, <span class="ref-crit">조건범위</span>)</div>
+        
+        <ul style="margin-bottom: 0; padding-left: 20px; line-height: 1.8;">
+            <li><span class="ref-db">데이터범위</span> : 표 전체 영역을 드래그 (반드시 <strong>제목 포함!</strong>)</li>
+            <li><span class="ref-field">계산할열</span> : 점수나 금액처럼 결과를 구할 열의 <strong>"제목"</strong></li>
+            <li><span class="ref-crit">조건범위</span> : 표 바깥에 따로 적어둔 '열 제목'과 '조건' 영역 (위아래 세트)</li>
+        </ul>
+    </div>
+
+    <h2>📌 실습: 특정 반의 최고 점수와 평균 점수 구하기</h2>
+    <p style="font-size: 15px; color: #555;">
+        드롭다운에서 <strong>'반(1반, 2반)'</strong>을 변경하거나 점수를 수정해 보세요! <br>
+        초록색 결과 셀을 클릭하면, 상단 수식 입력줄에 참조하는 범위가 색상으로 표시됩니다.
+    </p>
+
+    <div class="excel-container">
+        <div class="formula-bar-container">
+            <div class="fx-icon">fx</div>
+            <div class="formula-bar" id="formula-bar">결과 셀을 클릭하면 수식이 표시됩니다.</div>
+        </div>
+        <table class="excel-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>A</th>
+                    <th>B</th>
+                    <th>C</th>
+                    <th>D</th>
+                    <th>E</th>
+                    <th>F</th>
+                    <th>G</th>
+                </tr>
+            </thead>
+            <tbody id="sim-body">
+                <tr>
+                    <td class="row-num">1</td>
+                    <td class="header-cell cell-db">반</td>
+                    <td class="header-cell cell-db">이름</td>
+                    <td class="header-cell cell-db">점수</td>
+                    <td></td>
+                    <td class="header-cell cell-crit">반</td>
+                    <td class="header-cell">최고 점수</td>
+                    <td class="header-cell">평균 점수</td>
+                </tr>
+                <tr>
+                    <td class="row-num">2</td>
+                    <td class="cell-db">1반</td>
+                    <td class="cell-db">김철수</td>
+                    <td class="editable cell-db" contenteditable="true" id="score1">80</td>
+                    <td></td>
+                    <td class="cell-crit">
+                        <select id="cond-class" style="width: 100%; border: none; font-weight: bold; outline: none; background: transparent; cursor: pointer; color: #b12704; font-size: 14px;">
+                            <option value="1반">1반</option>
+                            <option value="2반">2반</option>
+                        </select>
+                    </td>
+                    <td class="result-cell" id="res-dmax" onclick="showFormula('dmax', this)"></td>
+                    <td class="result-cell" id="res-daverage" onclick="showFormula('daverage', this)"></td>
+                </tr>
+                <tr>
+                    <td class="row-num">3</td>
+                    <td class="cell-db">2반</td>
+                    <td class="cell-db">이영희</td>
+                    <td class="editable cell-db" contenteditable="true" id="score2">90</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="row-num">4</td>
+                    <td class="cell-db">1반</td>
+                    <td class="cell-db">박민수</td>
+                    <td class="editable cell-db" contenteditable="true" id="score3">85</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="hint">* DMAX 수식: =DMAX(A1:C4, "점수", E1:E2)<br>* DAVERAGE 수식: =DAVERAGE(A1:C4, "점수", E1:E2)</div>
+
+    <script>
+        const condClass = document.getElementById('cond-class');
+        const score1 = document.getElementById('score1');
+        const score2 = document.getElementById('score2');
+        const score3 = document.getElementById('score3');
+        
+        const resDmax = document.getElementById('res-dmax');
+        const resDaverage = document.getElementById('res-daverage');
+        const formulaBar = document.getElementById('formula-bar');
+        
+        let activeFormulaType = null;
+
+        // DB Data definition
+        function getData() {
+            return [
+                { class: '1반', score: parseInt(score1.innerText) || 0 },
+                { class: '2반', score: parseInt(score2.innerText) || 0 },
+                { class: '1반', score: parseInt(score3.innerText) || 0 }
+            ];
+        }
+
+        function updateResults() {
+            const condition = condClass.value;
+            const data = getData();
+            
+            // Filter
+            const filtered = data.filter(item => item.class === condition);
+            
+            if (filtered.length === 0) {
+                resDmax.innerText = '0';
+                resDaverage.innerText = '0';
+            } else {
+                // DMAX
+                const maxScore = Math.max(...filtered.map(item => item.score));
+                resDmax.innerText = maxScore;
+                
+                // DAVERAGE
+                const sum = filtered.reduce((acc, item) => acc + item.score, 0);
+                const avg = sum / filtered.length;
+                resDaverage.innerText = Number.isInteger(avg) ? avg : avg.toFixed(1);
+            }
+
+            if (activeFormulaType) {
+                showFormula(activeFormulaType, document.getElementById(`res-${activeFormulaType}`));
+            }
+        }
+
+        function showFormula(type, cellElement) {
+            activeFormulaType = type;
+            
+            // 셀 강조 처리
+            document.querySelectorAll('.result-cell').forEach(cell => cell.classList.remove('active-cell'));
+            cellElement.classList.add('active-cell');
+
+            // 엑셀 데이터 범위 및 조건 범위 하이라이트 (수식 색상과 매칭)
+            document.querySelectorAll('.cell-db').forEach(cell => cell.classList.add('highlight-db'));
+            document.querySelectorAll('.cell-crit').forEach(cell => cell.classList.add('highlight-crit'));
+
+            let html = '';
+            if (type === 'dmax') {
+                html = `<span class="operator">=</span><span class="func">DMAX</span><span class="paren1">(</span><span class="ref-db">A1:C4</span><span class="operator">, </span><span class="text">"점수"</span><span class="operator">, </span><span class="ref-crit">E1:E2</span><span class="paren1">)</span>`;
+            } else if (type === 'daverage') {
+                html = `<span class="operator">=</span><span class="func">DAVERAGE</span><span class="paren1">(</span><span class="ref-db">A1:C4</span><span class="operator">, </span><span class="text">"점수"</span><span class="operator">, </span><span class="ref-crit">E1:E2</span><span class="paren1">)</span>`;
+            }
+            formulaBar.innerHTML = html;
+        }
+
+        // Event Listeners
+        const editables = document.querySelectorAll('.editable');
+        editables.forEach(el => {
+            el.addEventListener('input', updateResults);
+        });
+
+        condClass.addEventListener('change', updateResults);
+
+        // Init
+        updateResults();
+    </script>
+</body>
+</html>
